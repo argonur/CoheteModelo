@@ -1,9 +1,9 @@
-/*####################################################
-# Cohete Modelo - Circuito de activación a distancia #
-# Web: www.argonur.com                               # 
-# Autor: Arturo Gonzalez                             #
-# Fecha: 16/05/2018                                  #
-####################################################*/
+  /*####################################################
+  # Cohete Modelo - Circuito de activación a distancia #
+  # Web: www.argonur.com                               # 
+  # Autor: Arturo Gonzalez                             #
+  # Fecha: 16/05/2018                                  #
+  ####################################################*/
 
 #include <LiquidCrystal.h>
 
@@ -20,65 +20,90 @@ const int renglones = 2;
 const int columnas = 16;
 
 // pines de botones, LEDs, etc.
-const int emergencyStop = 6;
-const int startButton = 7;
-const int buzzer = 8;
-const int greenLED = 13;
+const int paroEmergencia = 6;
+const int botonInicio = 7;
+const int bocina = 8;
+const int ledAmarillo = 13;
 
 //variables
 LiquidCrystal lcd(rs, enable, d4, d5, d6, d7);
-int switchState = 0;
-int prevSwitchState = 0;
-int reply;
+
+bool statusBotonInicio = false;
+bool statusParoEmergencia = true;
+
+int tiempoInicio = 0;
+int cuenta = 0;
+
+//estados
+enum Estado{Inicio, Paro, Listo, Conteo, Lanzado};
+Estado estadoActual = Inicio;
+Estado estadoPrevio = estadoActual;
 
 void setup() {
   
   lcd.begin(columnas, renglones);
 
-  pinMode(emergencyStop, INPUT);
-  pinMode(startButton, INPUT);
-  pinMode(greenLED, OUTPUT);  
+  pinMode(paroEmergencia, INPUT);
+  pinMode(botonInicio, INPUT);
+  pinMode(ledAmarillo, OUTPUT);  
 
   lcd.print("www.argonur.com");
   lcd.setCursor(0,1);
   lcd.print("Cohete Modelo");
 
+  while(millis() < 1000)
+  {
+    if(digitalRead(ledAmarillo)){
+      digitalWrite(ledAmarillo, LOW);   
+    } else {
+      digitalWrite(ledAmarillo, HIGH);  
+    }
+    delay(500);
+  }
+  digitalWrite(ledAmarillo, LOW); 
+
+  nuevoEstado();
 }
 
 void loop() {
-  switchState = digitalRead(startButton);
 
-  digitalWrite(greenLED, switchState);
+  leerEntradas();
   
-  if(switchState != prevSwitchState){
-      if(switchState == LOW){
+  if (estadoPrevio != estadoActual) {
+    nuevoEstado();  
+  }
+  estadoPrevio = estadoActual;
+  
+  //máquina de estados
+  switch(estadoActual){
 
+    case Inicio:
+      estadoInicio();
+      break;
+    
+    case Paro:
+      estadoParo();
+      break;
+    
+    case Listo:
+      estadoListo();
+      break;
+    
+    case Conteo:
+      estadoConteo();
+      break;
+    
+    case Lanzado:
+      estadoLanzado();
+      break;
 
-        
-        reply = random(4);
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print("Estado:");
-        lcd.setCursor(0, 1);
-
-        switch(reply){
-          case 0:
-          lcd.print("Listo");
-          break;
-          case 1:
-          lcd.print("Paro emergencia");
-          break;
-          case 2:
-          lcd.print("Conteo: 10");
-          break;
-          case 3:
-          lcd.print("Cohete lanzado");
-          break;
-          }
-
-          tone(buzzer, 2000, 500);
-      }
-    }
-    prevSwitchState = switchState;
+    //default:
+      //no debe suceder nunca
+    
+  }
+      
 }
+
+
+//          tone(bocina, 2000, 500);
 
