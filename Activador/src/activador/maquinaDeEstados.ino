@@ -46,12 +46,11 @@ void estadoConteo(void){
   }
 
   if (cuenta == 2){
-      //lanzar cohete
-      digitalWrite(ledAmarillo, HIGH);
+      lanzador(activar);
   }
 
   if (cuenta == 0){
-    digitalWrite(ledAmarillo, LOW);
+    lanzador(desactivar);
     estadoActual = Lanzado;  
   }
   
@@ -62,6 +61,44 @@ void estadoLanzado(void){
 
 }
 
+void configurarEstado(void){
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Estado:");
+  lcd.setCursor(0, 1);
+
+  switch(estadoActual){
+
+    case Inicio:
+      lcd.print("Inicio");
+      //delay(2000);
+      break;
+    
+    case Paro:
+      lcd.print("Paro emergencia");
+      break;
+    
+    case Listo:
+      lcd.print("Listo");
+      break;
+    
+    case Conteo:
+      tiempoInicio = millis();
+      cuenta = 12;
+      alarma();
+      mostrarConteo(cuenta - 2);
+      break;
+    
+    case Lanzado:
+      lcd.print("Cohete lanzado");
+      break;
+
+    default:
+      lcd.print("Falla");
+  }  
+    
+}
 
 void cuentaRegresiva(void){
 
@@ -69,9 +106,24 @@ void cuentaRegresiva(void){
   if ((tiempo - tiempoInicio) > 1000) {
     cuenta--;
     tiempoInicio = tiempo;
+
+    alarma();
+    
+    mostrarConteo(cuenta - 2);    
   }
-   
+
 }
 
+void mostrarConteo( int numero ) {
 
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Cuenta regresiva");
+  lcd.setCursor(0, 1);
+
+  if ( numero >= 0 ) 
+  {
+    lcd.print( numero );
+  }
+}
 

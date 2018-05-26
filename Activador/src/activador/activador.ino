@@ -19,11 +19,11 @@ const int d7 = 2;
 const int renglones = 2;
 const int columnas = 16;
 
-// pines de botones, LEDs, etc.
+// pines de botones, LEDs, salidas, etc.
 const int paroEmergencia = 6;
 const int botonInicio = 7;
 const int bocina = 8;
-const int ledAmarillo = 13;
+const int salidaLanzador = 13;
 
 //variables
 LiquidCrystal lcd(rs, enable, d4, d5, d6, d7);
@@ -34,10 +34,13 @@ bool statusParoEmergencia = true;
 int tiempoInicio = 0;
 int cuenta = 0;
 
-//estados
+//Estados de la máquina de estados
 enum Estado{Inicio, Paro, Listo, Conteo, Lanzado};
 Estado estadoActual = Inicio;
 Estado estadoPrevio = estadoActual;
+
+//Ordenes para la salida activadora
+enum EstadoLanzador{activar, desactivar};
 
 void setup() {
   
@@ -45,24 +48,15 @@ void setup() {
 
   pinMode(paroEmergencia, INPUT);
   pinMode(botonInicio, INPUT);
-  pinMode(ledAmarillo, OUTPUT);  
+  pinMode(salidaLanzador, OUTPUT);  
 
   lcd.print("www.argonur.com");
   lcd.setCursor(0,1);
   lcd.print("Cohete Modelo");
 
-  while(millis() < 1000)
-  {
-    if(digitalRead(ledAmarillo)){
-      digitalWrite(ledAmarillo, LOW);   
-    } else {
-      digitalWrite(ledAmarillo, HIGH);  
-    }
-    delay(500);
-  }
-  digitalWrite(ledAmarillo, LOW); 
-
-  nuevoEstado();
+  delay(3000);
+  
+  configurarEstado();
 }
 
 void loop() {
@@ -70,7 +64,7 @@ void loop() {
   leerEntradas();
   
   if (estadoPrevio != estadoActual) {
-    nuevoEstado();  
+    configurarEstado();  
   }
   estadoPrevio = estadoActual;
   
@@ -105,5 +99,4 @@ void loop() {
 }
 
 
-//          tone(bocina, 2000, 500);
 
